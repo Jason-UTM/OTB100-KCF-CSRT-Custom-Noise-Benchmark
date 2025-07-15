@@ -54,6 +54,3 @@ if __name__ == "__main__":
         plot_metrics(RESULTS_DIR, sequence)
         plot_eao_trends(RESULTS_DIR, sequence)
         plot_precision_vs_robustness(RESULTS_DIR, sequence)
-
-    # Purge noise folders if needed
-    purge_noise_folders(DATASET_PATH)

@@ -81,17 +81,39 @@ The pipeline applies **Gaussian** and **salt-and-pepper** noise with multiple oc
    pip install -r requirements.txt
    ```
 
-5. **Generate noisy sequences** (First step)
-   ```bash
-   python main_noise_application.py
-   ```
-   This will create noisy versions of the sequences (e.g., `img_gaussian_0.2/`, `img_salt_pepper_0.4/`) in each sequence folder.
-
-6. **Run the tracking pipeline**
+5. **Run the complete pipeline**
    ```bash
    python main.py
    ```
-   This will perform tracking on the noisy sequences and generate results.
+   This will automatically:
+   - Generate noisy sequences with configured noise types and occlusion levels
+   - Run tracking evaluation on all combinations
+   - Generate analysis plots and consolidated metrics tables
+   - Save results as CSV files and videos
+
+### Alternative: Run Individual Components
+
+If you want to run specific parts of the pipeline separately:
+
+- **Generate noisy sequences only:**
+  ```bash
+  python main_noise_application.py
+  ```
+
+- **Run tracking evaluation only:** (requires noisy sequences)
+  ```bash
+  python main_tracking.py
+  ```
+
+- **Generate analysis plots only:** (requires tracking results)
+  ```bash
+  python main_analysis.py
+  ```
+
+- **Purge generated noisy frames:**
+  ```bash
+  python main_purge.py
+  ```
 
 ## ⚙️ Configuration
 
@@ -114,8 +136,14 @@ Edit `config.json` to customize your tracking pipeline:
 
 ## 📊 Output Examples
 
-- **CSV Metrics**: `results/Basketball/kcf_gaussian_0.2.csv`
-- **Video Output**: `results/Basketball/kcf_gaussian_0.2.avi`
+The pipeline generates:
+- **Consolidated CSV**: `results/Basketball/Basketball_metrics_table.csv` (all tracker results in one file)
+- **Analysis Plots**: 
+  - `results/Basketball/Basketball_metrics_bar.png` (bar charts)
+  - `results/Basketball/Basketball_eao_trends.png` (EAO trends)
+  - `results/Basketball/Basketball_precision_vs_robustness.png` (scatter plot)
+- **Video Output**: `results/Basketball/kcf_gaussian_0.2.avi` (tracking videos)
+- **Markdown Table**: `results/Basketball/Basketball_metrics_table.md` (formatted results)
 
 ## 📄 License
 
