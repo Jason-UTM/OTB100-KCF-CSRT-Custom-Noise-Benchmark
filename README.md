@@ -24,20 +24,38 @@ The pipeline applies **Gaussian** and **salt-and-pepper** noise with multiple oc
 ```
 📦 Traditional Tracker
 ├── 📄 config.json                      # Configuration file for paths, trackers, and settings
-├── 🐍 main.py                          # Main script to load config and run pipeline
-├── 🔧 main_noise_application.py        # Generates noisy frames
+├── 🐍 main.py                          # Main script to run complete pipeline
+├── 🔧 main_noise_application.py        # Generates noisy frames only
+├── 🎯 main_tracking.py                 # Runs tracking evaluation only
+├── 📊 main_analysis.py                 # Generates analysis plots only
 ├── 🧹 main_purge.py                    # Purge noisy generated frames and folders
+├── 🔧 services/                        # Core pipeline modules
+│   ├── config.py                       # Configuration loader
+│   ├── noise.py                        # Noise and occlusion application
+│   ├── benchmark.py                    # Tracking evaluation
+│   ├── analysis.py                     # Results analysis and plotting
+│   ├── results.py                      # Results saving utilities
+│   ├── data.py                         # Dataset loading utilities
+│   └── helper.py                       # Helper functions
 ├── 📁 dataset/                         # Contains all data related
 │   └── 📁 OTB100/                      # OTB-100 dataset directory
 │       ├── 🏀 Basketball/  
 │       │   ├── 🖼️ img/                 # Original frames
-│       │   ├── 🌫️ img_gaussian_0.2/    # Noisy frames
+│       │   ├── 🌫️ img_gaussian_0.2/    # Generated noisy frames
+│       │   ├── 🌫️ img_gaussian_0.4/    # Generated noisy frames
+│       │   ├── 🌫️ img_salt_pepper_0.2/ # Generated noisy frames
+│       │   ├── 🌫️ ... (other combinations)
 │       │   └── 📋 groundtruth_rect.txt # Ground truth bounding boxes
 ├── 📊 results/                         # Output directory
 │   └── 🏀 Basketball/  
-│       ├── 📈 kcf_gaussian_0.2.csv     # Metrics for KCF, Gaussian noise, 0.2 occlusion
-│       ├── 🎥 kcf_gaussian_0.2.avi     # Video output
-│       └── ... 
+│       ├── 📈 Basketball_metrics_table.csv     # Consolidated metrics for all trackers/combinations
+│       ├── 📋 Basketball_metrics_table.md      # Markdown formatted table
+│       ├── 📊 Basketball_metrics_bar.png       # Bar chart analysis plots
+│       ├── 📈 Basketball_eao_trends.png        # EAO trends line plots
+│       ├── 🎯 Basketball_precision_vs_robustness.png # Scatter plot analysis
+│       ├── 🎥 kcf_gaussian_0.2.avi            # Tracking video outputs
+│       ├── 🎥 csrt_gaussian_0.2.avi           # Tracking video outputs
+│       └── 🎥 ... (other tracker/combination videos)
 ├── 📖 README.md                        # This file
 └── 📋 requirements.txt                 # All dependencies to run this project
 ```
