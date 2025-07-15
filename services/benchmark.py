@@ -6,7 +6,7 @@ from tqdm import tqdm
 from typing import Union, List, Dict, Optional, Tuple
 from services.data import load_otb100_data
 from services.helper import compute_iou, compute_center_error, validate_bbox, clamp_bbox_to_int, draw_tracking_info
-from services.results import save_tracker_results
+from services.results import save_tracker_results, save_consolidated_results
 
 def run_trackers_and_evaluate(
     dataset_path: str,
@@ -267,8 +267,8 @@ def run_trackers_and_evaluate(
                     
                     pbar.update(1)
     
-    # Save results to CSVs
-    save_tracker_results(results, results_dir, sequences=sequence_list)
+    # Save results to consolidated CSVs
+    save_consolidated_results(results, results_dir, sequences=sequence_list)
     
     # Clean up visualization
     if visualize:

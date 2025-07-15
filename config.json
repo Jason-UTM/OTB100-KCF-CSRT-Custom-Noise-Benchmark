@@ -1,7 +1,7 @@
 {
   "DATASET_PATH": "./dataset/OTB100",
   "RESULTS_DIR": "./results",
-  "SEQUENCES": ["Basketball"],
+  "SEQUENCES": ["Basketball", "Surfer"],
   "TRACKERS": ["KCF", "CSRT"],
   "NOISE_TYPES": ["gaussian", "salt_pepper"],
   "OCCLUSION_LEVELS": [0.2, 0.4, 0.6],
