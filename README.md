@@ -38,7 +38,7 @@ The pipeline applies **Gaussian** and **salt-and-pepper** noise with multiple oc
 │   ├── results.py                      # Results saving utilities
 │   ├── data.py                         # Dataset loading utilities
 │   └── helper.py                       # Helper functions
-├── 📁 dataset/                         # Contains all data related
+├── 📁 ./dataset/                        # Contains all data related
 │   └── 📁 OTB100/                      # OTB-100 dataset directory
 │       ├── 🏀 Basketball/  
 │       │   ├── 🖼️ img/                 # Original frames
@@ -47,7 +47,7 @@ The pipeline applies **Gaussian** and **salt-and-pepper** noise with multiple oc
 │       │   ├── 🌫️ img_salt_pepper_0.2/ # Generated noisy frames
 │       │   ├── 🌫️ ... (other combinations)
 │       │   └── 📋 groundtruth_rect.txt # Ground truth bounding boxes
-├── 📊 results/                         # Output directory
+├── 📊 ./results/                        # Output directory
 │   └── 🏀 Basketball/  
 │       ├── 📈 Basketball_metrics_table.csv     # Consolidated metrics for all trackers/combinations
 │       ├── 📋 Basketball_metrics_table.md      # Markdown formatted table
@@ -84,7 +84,7 @@ The pipeline applies **Gaussian** and **salt-and-pepper** noise with multiple oc
    - Download the dataset (requires Kaggle account)
    - Extract the downloaded file to create the following structure:
      ```
-     dataset/
+     ./dataset/
      └── OTB100/
          ├── Basketball/
          ├── Biker/
@@ -232,13 +232,13 @@ The current configuration includes a curated **Enhanced 12-Sequence Set** that p
 ## 📊 Output Examples
 
 The pipeline generates:
-- **Consolidated CSV**: `results/Basketball/Basketball_metrics_table.csv` (all tracker results in one file)
+- **Consolidated CSV**: `./results/Basketball/Basketball_metrics_table.csv` (all tracker results in one file)
 - **Analysis Plots**: 
-  - `results/Basketball/Basketball_metrics_bar.png` (bar charts)
-  - `results/Basketball/Basketball_eao_trends.png` (EAO trends)
-  - `results/Basketball/Basketball_precision_vs_robustness.png` (scatter plot)
-- **Video Output**: `results/Basketball/kcf_gaussian_0.2.avi` (tracking videos)
-- **Markdown Table**: `results/Basketball/Basketball_metrics_table.md` (formatted results)
+  - `./results/Basketball/Basketball_metrics_bar.png` (bar charts)
+  - `./results/Basketball/Basketball_eao_trends.png` (EAO trends)
+  - `./results/Basketball/Basketball_precision_vs_robustness.png` (scatter plot)
+- **Video Output**: `./results/Basketball/kcf_gaussian_0.2.avi` (tracking videos)
+- **Markdown Table**: `./results/Basketball/Basketball_metrics_table.md` (formatted results)
 
 ## 📄 License
 
