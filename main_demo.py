@@ -94,7 +94,7 @@ def main():
             results_dir=config['RESULTS_DIR'],
             sequences=DEMO_SEQUENCES,
             trackers=config['TRACKERS'],
-            visualize=False,  # Disable visualization for demo
+            visualize=True,  # Enable visualization for demo
             save_videos=config['SAVE_VIDEOS'],
             failure_threshold=config['FAILURE_THRESHOLD'],
             frame_delay=config['FRAME_DELAY']

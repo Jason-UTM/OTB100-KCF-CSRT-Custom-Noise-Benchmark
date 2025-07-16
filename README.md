@@ -177,7 +177,22 @@ Edit `config.json` to customize your tracking pipeline:
 {
   "DATASET_PATH": "./dataset/OTB100",
   "RESULTS_DIR": "./results",
-  "SEQUENCES": [],
+  "SEQUENCES": [
+    "Dudek", "Freeman1",
+    "Car4", "Car1",
+    "Tiger1", "Bird1",
+    "Basketball", "Soccer",
+    "Box", "Rubik",
+    "BlurCar1", "FaceOcc1"
+  ],
+  "SEQUENCE_CATEGORIES": {
+    "Human/Person": ["Dudek", "Freeman1"],
+    "Vehicle": ["Car4", "Car1"],
+    "Animal": ["Tiger1", "Bird1"],
+    "Sports/Athletics": ["Basketball", "Soccer"],
+    "Object/Rigid": ["Box", "Rubik"],
+    "Quality_Challenges": ["BlurCar1", "FaceOcc1"]
+  },
   "TRACKERS": ["KCF", "CSRT"],
   "NOISE_TYPES": ["gaussian", "salt_pepper"],
   "OCCLUSION_LEVELS": [0.2, 0.4, 0.6],
@@ -192,7 +207,18 @@ Edit `config.json` to customize your tracking pipeline:
 
 - **`"SEQUENCES": []`** - Process all sequences with valid ground-truth files
 - **`"SEQUENCES": ["Basketball"]`** - Process specific sequences
-- **`"SEQUENCES": ["Basketball", "Car1"]`** - Process multiple specific sequences
+- **`"SEQUENCES": ["Dudek", "Freeman1", ...]`** - Current configuration uses **Enhanced 12-Sequence Set** representing 6 categories for comprehensive evaluation
+
+The current configuration includes a curated **Enhanced 12-Sequence Set** that provides representative coverage across different tracking scenarios:
+
+| Category | Sequences | Description |
+|----------|-----------|-------------|
+| **Human/Person** | Dudek, Freeman1 | Person tracking scenarios |
+| **Vehicle** | Car4, Car1 | Vehicle tracking in different conditions |
+| **Animal** | Tiger1, Bird1 | Animal movement and behavior tracking |
+| **Sports/Athletics** | Basketball, Soccer | Sports scenarios with fast motion |
+| **Object/Rigid** | Box, Rubik | Rigid object tracking |
+| **Quality_Challenges** | BlurCar1, FaceOcc1 | Challenging conditions (blur, occlusion) |
 
 ⚠️ **Note**: Some OTB-100 sequences lack ground-truth files (e.g., `Human4`, `Skating2`) and will be automatically excluded from processing to prevent errors.
 
