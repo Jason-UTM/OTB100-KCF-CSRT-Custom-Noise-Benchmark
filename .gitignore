@@ -1,6 +1,9 @@
 # Archive files
 archive.zip
 
+# Documentation files
+METHODOLOGY.md
+
 # Results directory - ignore all contents
 results/
 

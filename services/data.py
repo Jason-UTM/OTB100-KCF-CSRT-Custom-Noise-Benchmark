@@ -50,20 +50,19 @@ def load_otb100_data(dataset_path, sequences=None):
         if not os.path.exists(img_path):
             print(f"Warning: Image folder not found for sequence {seq}")
             continue
-        
-        # Load frame paths (sorted to ensure correct order)
+          # Load frame paths (sorted to ensure correct order)
         frames = sorted([os.path.join(img_path, f) for f in os.listdir(img_path) 
                         if f.endswith(('.jpg', '.png'))])
         if not frames:
             print(f"Warning: No images found for sequence {seq}")
             continue
-        
+
         # Load ground-truth bounding boxes
         gt_file = os.path.join(seq_path, 'groundtruth_rect.txt')
         if not os.path.exists(gt_file):
             print(f"Warning: Ground-truth file not found for sequence {seq}")
             continue
-        
+
         bboxes = []
         with open(gt_file, 'r') as f:
             for line in f:
@@ -75,7 +74,7 @@ def load_otb100_data(dataset_path, sequences=None):
                 else:
                     print(f"Warning: Invalid bounding box format in {gt_file}")
                     bboxes.append([0, 0, 0, 0])  # Placeholder for invalid lines
-        
+
         # Ensure initial bounding box is valid
         initial_bbox = bboxes[0] if bboxes else [0, 0, 0, 0]
         

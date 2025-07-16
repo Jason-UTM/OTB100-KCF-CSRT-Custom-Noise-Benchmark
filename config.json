@@ -1,7 +1,22 @@
 {
   "DATASET_PATH": "./dataset/OTB100",
   "RESULTS_DIR": "./results",
-  "SEQUENCES": ["Basketball", "Surfer"],
+  "SEQUENCES": [
+    "Dudek", "Freeman1",
+    "Car4", "Car1",
+    "Tiger1", "Bird1",
+    "Basketball", "Soccer",
+    "Box", "Rubik",
+    "BlurCar1", "FaceOcc1"
+  ],
+  "SEQUENCE_CATEGORIES": {
+    "Human/Person": ["Dudek", "Freeman1"],
+    "Vehicle": ["Car4", "Car1"],
+    "Animal": ["Tiger1", "Bird1"],
+    "Sports/Athletics": ["Basketball", "Soccer"],
+    "Object/Rigid": ["Box", "Rubik"],
+    "Quality_Challenges": ["BlurCar1", "FaceOcc1"]
+  },
   "TRACKERS": ["KCF", "CSRT"],
   "NOISE_TYPES": ["gaussian", "salt_pepper"],
   "OCCLUSION_LEVELS": [0.2, 0.4, 0.6],

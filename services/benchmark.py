@@ -6,7 +6,8 @@ from tqdm import tqdm
 from typing import Union, List, Dict, Optional, Tuple
 from services.data import load_otb100_data
 from services.helper import compute_iou, compute_center_error, validate_bbox, clamp_bbox_to_int, draw_tracking_info
-from services.results import save_tracker_results, save_consolidated_results
+from services.results import save_tracker_results, save_consolidated_results, save_all_sequences_consolidated_csv
+from services.analysis import plot_metrics, plot_eao_trends, plot_precision_vs_robustness, generate_metrics_table
 
 def run_trackers_and_evaluate(
     dataset_path: str,
@@ -106,14 +107,169 @@ def run_trackers_and_evaluate(
     total_tasks = len(data) * len(trackers_dict) * len(combinations)
     with tqdm(total=total_tasks, desc="Tracking and evaluating", unit="task") as pbar:
         for seq, seq_data in data.items():
-            results[seq] = {}
+            # Check if sequence already has complete results (CSV + videos + plots)
+            seq_dir = os.path.join(results_dir, seq)
+            csv_path = os.path.join(seq_dir, f"{seq}_metrics_table.csv")
+            
+            # Function to check if sequence is completely processed
+            def analyze_sequence_completion(seq_name, seq_directory, trackers, combinations, save_videos_flag):
+                """Analyze what components are missing for a sequence."""
+                missing_components = []
+                existing_combinations = []
+                
+                # Check CSV file and extract existing combinations
+                csv_file = os.path.join(seq_directory, f"{seq_name}_metrics_table.csv")
+                if os.path.exists(csv_file):
+                    try:
+                        import pandas as pd
+                        existing_df = pd.read_csv(csv_file)
+                        for _, row in existing_df.iterrows():
+                            tracker_combo = (row['Tracker'], row['Combo'])
+                            existing_combinations.append(tracker_combo)
+                    except Exception as e:
+                        missing_components.append(f"CSV file corrupted: {e}")
+                
+                # Identify missing tracker/combination pairs
+                missing_tracking = []
+                for tracker_name in trackers:
+                    for combo in combinations:
+                        if (tracker_name, combo) not in existing_combinations:
+                            missing_tracking.append((tracker_name, combo))
+                
+                # Check video files if save_videos is enabled
+                missing_videos = []
+                if save_videos_flag:
+                    for tracker_name in trackers:
+                        for combo in combinations:
+                            video_path = os.path.join(seq_directory, f"{tracker_name.lower()}_{combo}.avi")
+                            if not os.path.exists(video_path):
+                                missing_videos.append(f"{tracker_name.lower()}_{combo}.avi")
+                
+                # Check plot files
+                missing_plots = []
+                required_plots = [
+                    f"{seq_name}_metrics_bar.png",
+                    f"{seq_name}_eao_trends.png", 
+                    f"{seq_name}_precision_vs_robustness.png",
+                    f"{seq_name}_metrics_table.md"
+                ]
+                
+                for plot_file in required_plots:
+                    plot_path = os.path.join(seq_directory, plot_file)
+                    if not os.path.exists(plot_path):
+                        missing_plots.append(plot_file)
+                
+                return {
+                    'missing_tracking': missing_tracking,
+                    'missing_videos': missing_videos,
+                    'missing_plots': missing_plots,
+                    'existing_combinations': existing_combinations,
+                    'is_complete': len(missing_tracking) == 0 and len(missing_videos) == 0 and len(missing_plots) == 0
+                }
+            
+            # Analyze completion status
+            completion_info = analyze_sequence_completion(seq, seq_dir, list(trackers_dict.keys()), combinations, save_videos)
+            
+            if completion_info['is_complete']:
+                print(f"Skipping sequence {seq}: already completed (CSV + videos + plots)")
+                
+                # Load existing results from CSV for final consolidation
+                try:
+                    import pandas as pd
+                    csv_file = os.path.join(seq_dir, f"{seq}_metrics_table.csv")
+                    existing_df = pd.read_csv(csv_file)
+                    
+                    # Reconstruct results dictionary from CSV
+                    results[seq] = {}
+                    for _, row in existing_df.iterrows():
+                        tracker_name = row['Tracker']
+                        combo = row['Combo']
+                        
+                        if tracker_name not in results[seq]:
+                            results[seq][tracker_name] = {}
+                        
+                        results[seq][tracker_name][combo] = {
+                            'EAO': row['EAO'],
+                            'Robustness': row['Robustness'],
+                            'Precision': row['Precision'],
+                            'TrackingTime': row['TrackingTime'],
+                            'FPS': row['FPS'],
+                            'NumFrames': row['NumFrames'],
+                            'NumFailures': row['NumFailures']
+                        }
+                    
+                    print(f"Loaded existing results for {seq}: {len(existing_df)} combinations")
+                    
+                except Exception as e:
+                    print(f"Warning: Could not load existing results for {seq}: {e}")
+                
+                # Skip this sequence but update progress bar
+                pbar.update(len(trackers_dict) * len(combinations))
+                continue
+            else:
+                # Selective processing - only process missing components
+                missing_tracking = completion_info['missing_tracking']
+                missing_plots = completion_info['missing_plots']
+                missing_videos = completion_info['missing_videos']
+                
+                print(f"Partial processing for {seq}:")
+                if missing_tracking:
+                    print(f"  Missing tracking: {len(missing_tracking)} combinations")
+                if missing_videos:
+                    print(f"  Missing videos: {len(missing_videos)} files")
+                if missing_plots:
+                    print(f"  Missing plots: {missing_plots}")
+                
+                # Load existing results first
+                try:
+                    if completion_info['existing_combinations']:
+                        import pandas as pd
+                        csv_file = os.path.join(seq_dir, f"{seq}_metrics_table.csv")
+                        existing_df = pd.read_csv(csv_file)
+                        
+                        # Initialize results[seq] and load existing data
+                        results[seq] = {}
+                        for _, row in existing_df.iterrows():
+                            tracker_name = row['Tracker']
+                            combo = row['Combo']
+                            
+                            if tracker_name not in results[seq]:
+                                results[seq][tracker_name] = {}
+                            
+                            results[seq][tracker_name][combo] = {
+                                'EAO': row['EAO'],
+                                'Robustness': row['Robustness'],
+                                'Precision': row['Precision'],
+                                'TrackingTime': row['TrackingTime'],
+                                'FPS': row['FPS'],
+                                'NumFrames': row['NumFrames'],
+                                'NumFailures': row['NumFailures']
+                            }
+                        print(f"  Loaded existing results: {len(existing_df)} combinations")
+                except Exception as e:
+                    print(f"  Warning: Could not load existing results: {e}")
+                    results[seq] = {}
+            
+            # Ensure results[seq] exists
+            if seq not in results:
+                results[seq] = {}
+                
             gt_bboxes = seq_data['groundtruth_bboxes']
             initial_bbox = seq_data['initial_bbox']
             
             for tracker_name, tracker_create in trackers_dict.items():
-                results[seq][tracker_name] = {}
+                if tracker_name not in results[seq]:
+                    results[seq][tracker_name] = {}
                 
                 for combo in combinations:
+                    # Skip if this combination already exists (selective processing)
+                    if tracker_name in results[seq] and combo in results[seq][tracker_name]:
+                        print(f"  Skipping {tracker_name}/{combo}: already exists")
+                        pbar.update(1)
+                        continue
+                    
+                    print(f"  Processing {tracker_name}/{combo}: missing result")
+                    
                     # Initialize metrics
                     overlaps = []
                     center_errors = []
@@ -266,9 +422,51 @@ def run_trackers_and_evaluate(
                         video_writer.release()
                     
                     pbar.update(1)
+            
+            # Save results immediately after completing this sequence
+            if seq in results and results[seq]:
+                sequence_results = {seq: results[seq]}
+                save_consolidated_results(sequence_results, results_dir, sequences=[seq])
+                print(f"Saved results for sequence: {seq}")
+                
+                # Generate analysis plots for this sequence (always regenerate if missing)
+                try:
+                    if 'completion_info' in locals() and completion_info['missing_plots']:
+                        print(f"Regenerating missing plots for sequence: {seq}")
+                        for missing_plot in completion_info['missing_plots']:
+                            print(f"  Regenerating: {missing_plot}")
+                    else:
+                        print(f"Generating analysis plots for sequence: {seq}")
+                    
+                    plot_metrics(results_dir, seq)
+                    plot_eao_trends(results_dir, seq)
+                    plot_precision_vs_robustness(results_dir, seq)
+                    generate_metrics_table(results_dir, seq)
+                    print(f"Analysis plots completed for sequence: {seq}")
+                except Exception as e:
+                    print(f"Warning: Failed to generate plots for {seq}: {e}")
+            elif seq in results:
+                # Even if no new tracking was done, regenerate missing plots
+                try:
+                    if 'completion_info' in locals() and completion_info['missing_plots']:
+                        print(f"Regenerating missing plots for completed sequence: {seq}")
+                        for missing_plot in completion_info['missing_plots']:
+                            print(f"  Regenerating: {missing_plot}")
+                        
+                        plot_metrics(results_dir, seq)
+                        plot_eao_trends(results_dir, seq)
+                        plot_precision_vs_robustness(results_dir, seq)
+                        generate_metrics_table(results_dir, seq)
+                        print(f"Plot regeneration completed for sequence: {seq}")
+                except Exception as e:
+                    print(f"Warning: Failed to regenerate plots for {seq}: {e}")
     
-    # Save results to consolidated CSVs
-    save_consolidated_results(results, results_dir, sequences=sequence_list)
+    # Final consolidated save (in case any sequences were processed)
+    if results:
+        print("Creating final consolidated results...")
+        save_consolidated_results(results, results_dir, sequences=sequence_list)
+        print("Creating consolidated CSV for all sequences...")
+        save_all_sequences_consolidated_csv(results, results_dir, sequences=sequence_list)
     
     # Clean up visualization
     if visualize:

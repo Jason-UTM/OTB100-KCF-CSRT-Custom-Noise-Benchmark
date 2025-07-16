@@ -25,6 +25,7 @@ The pipeline applies **Gaussian** and **salt-and-pepper** noise with multiple oc
 📦 Traditional Tracker
 ├── 📄 config.json                      # Configuration file for paths, trackers, and settings
 ├── 🐍 main.py                          # Main script to run complete pipeline
+├── 🎯 main_demo.py                     # Quick demonstration script (Deer sequence)
 ├── 🔧 main_noise_application.py        # Generates noisy frames only
 ├── 🎯 main_tracking.py                 # Runs tracking evaluation only
 ├── 📊 main_analysis.py                 # Generates analysis plots only
@@ -66,6 +67,9 @@ The pipeline applies **Gaussian** and **salt-and-pepper** noise with multiple oc
 
 - Python 3.11.7
 - pip (Python package installer)
+- **Storage Space**: ~42GB free disk space for generated noisy frames (when processing all OTB-100 sequences)
+
+⚠️ **Storage Warning**: The pipeline generates noisy versions of all frames for each noise type and occlusion level combination. With 6 combinations (2 noise types × 3 occlusion levels) across all OTB-100 sequences, this can require up to 42GB of additional storage space.
 
 ### Installation
 
@@ -109,6 +113,38 @@ The pipeline applies **Gaussian** and **salt-and-pepper** noise with multiple oc
    - Generate analysis plots and consolidated metrics tables
    - Save results as CSV files and videos
 
+## 🎯 Quick Demo
+
+For a quick demonstration of the complete pipeline, use the demo script which processes the shortest sequence (Deer - 71 frames):
+
+```bash
+python main_demo.py
+```
+
+**Demo Features:**
+- ⚡ **Fast Execution**: Completes in ~2 minutes (vs. hours for full dataset)
+- 🧹 **Auto-cleanup**: Automatically clears existing results for fresh demonstration
+- 📊 **Complete Pipeline**: Demonstrates all features including noise application, tracking, and analysis
+- 🎬 **Full Output**: Generates videos, CSV files, and visualization plots
+- 📈 **Performance Summary**: Shows best EAO scores for each tracker
+
+**Demo Output Example:**
+```
+🎯 Sequence: Deer
+📦 Trackers evaluated: 2
+🔄 Total combinations processed: 12
+   🏆 KCF best EAO: 0.5136 (combo: gaussian_0.2)
+   🏆 CSRT best EAO: 0.7814 (combo: gaussian_0.2)
+⏱️  Total demo time: 121.95 seconds (2.03 minutes)
+📊 Processing rate: 0.6 frames/second
+```
+
+The demo is perfect for:
+- Testing the installation and setup
+- Understanding the pipeline workflow
+- Quick performance comparison between trackers
+- Generating sample results for verification
+
 ### Alternative: Run Individual Components
 
 If you want to run specific parts of the pipeline separately:
@@ -141,7 +177,7 @@ Edit `config.json` to customize your tracking pipeline:
 {
   "DATASET_PATH": "./dataset/OTB100",
   "RESULTS_DIR": "./results",
-  "SEQUENCES": ["Basketball"],
+  "SEQUENCES": [],
   "TRACKERS": ["KCF", "CSRT"],
   "NOISE_TYPES": ["gaussian", "salt_pepper"],
   "OCCLUSION_LEVELS": [0.2, 0.4, 0.6],
@@ -151,6 +187,21 @@ Edit `config.json` to customize your tracking pipeline:
   "FRAME_DELAY": 25
 }
 ```
+
+### Sequence Configuration
+
+- **`"SEQUENCES": []`** - Process all sequences with valid ground-truth files
+- **`"SEQUENCES": ["Basketball"]`** - Process specific sequences
+- **`"SEQUENCES": ["Basketball", "Car1"]`** - Process multiple specific sequences
+
+⚠️ **Note**: Some OTB-100 sequences lack ground-truth files (e.g., `Human4`, `Skating2`) and will be automatically excluded from processing to prevent errors.
+
+### Other Configuration Options
+
+- **`VISUALIZE`**: Show real-time tracking visualization during evaluation
+- **`SAVE_VIDEOS`**: Generate tracking result videos (.avi files)
+- **`FAILURE_THRESHOLD`**: IoU threshold below which tracking is considered failed
+- **`FRAME_DELAY`**: Delay in milliseconds between frames during visualization
 
 ## 📊 Output Examples
 
