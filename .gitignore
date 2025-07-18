@@ -10,6 +10,9 @@ results/
 # Dataset directory - ignore all contents
 dataset/
 
+# Demo folder - ignore all contents
+demo/
+
 # Python cache files
 __pycache__/
 *.py[cod]
