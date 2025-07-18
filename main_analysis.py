@@ -1,5 +1,5 @@
 from services.config import load_config
-from services.analysis import plot_metrics, plot_eao_trends, plot_precision_vs_robustness
+from services.analysis import plot_metrics, plot_eao_trends, plot_precision_vs_robustness, overall_performance
 
 if __name__ == "__main__":
     # Load configuration
@@ -15,6 +15,9 @@ if __name__ == "__main__":
         plot_metrics(RESULTS_DIR, sequence)
         plot_eao_trends(RESULTS_DIR, sequence)
         plot_precision_vs_robustness(RESULTS_DIR, sequence)
+    
+    # Overall performance across all sequences
+    overall_performance()
     
 
 '''

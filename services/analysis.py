@@ -10,6 +10,12 @@ def plot_metrics(results_dir: str, sequence: str):
         results_dir: Directory containing results (e.g., 'results')
         sequence: Sequence name (e.g., 'Basketball')
     """
+    # Check if plot already exists
+    plot_path = os.path.join(results_dir, sequence, f'{sequence}_metrics_bar.png')
+    if os.path.exists(plot_path):
+        print(f"Plot already exists, skipping: {plot_path}")
+        return
+    
     # Load consolidated CSV
     seq_dir = os.path.join(results_dir, sequence)
     if not os.path.exists(seq_dir):
@@ -57,6 +63,12 @@ def plot_eao_trends(results_dir: str, sequence: str):
         results_dir: Directory containing results
         sequence: Sequence name
     """
+    # Check if plot already exists
+    plot_path = os.path.join(results_dir, sequence, f'{sequence}_eao_trends.png')
+    if os.path.exists(plot_path):
+        print(f"Plot already exists, skipping: {plot_path}")
+        return
+    
     seq_dir = os.path.join(results_dir, sequence)
     if not os.path.exists(seq_dir):
         raise FileNotFoundError(f"Results directory {seq_dir} not found")
@@ -131,6 +143,12 @@ def plot_precision_vs_robustness(results_dir: str, sequence: str):
         results_dir: Directory containing results
         sequence: Sequence name
     """
+    # Check if plot already exists
+    plot_path = os.path.join(results_dir, sequence, f'{sequence}_precision_vs_robustness.png')
+    if os.path.exists(plot_path):
+        print(f"Plot already exists, skipping: {plot_path}")
+        return
+    
     seq_dir = os.path.join(results_dir, sequence)
     if not os.path.exists(seq_dir):
         raise FileNotFoundError(f"Results directory {seq_dir} not found")
@@ -158,3 +176,57 @@ def plot_precision_vs_robustness(results_dir: str, sequence: str):
     plt.grid(True)
     plt.savefig(os.path.join(results_dir, sequence, f'{sequence}_precision_vs_robustness.png'))
     plt.show()
+
+def overall_performance():
+    """
+    Caculate overall performance metrics grouped by tracker from the consolidated CSV with all sequences.
+    """
+    # Load consolidated CSV
+    csv_path = os.path.join('results', 'all_sequences_metrics_table.csv')
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"Consolidated metrics file {csv_path} not found")
+    df = pd.read_csv(csv_path)
+    # Group by tracker and calculate mean metrics
+    overall = df.groupby('Tracker').agg({
+        'EAO': 'mean',
+        'Robustness': 'mean',
+        'Precision': 'mean',
+        'TrackingTime': 'mean', 
+        'FPS': 'mean',
+        'NumFrames': 'sum',
+        'NumFailures': 'sum'
+    }).reset_index()
+    print("Overall performance metrics:")
+    print(overall)
+
+    # Save overall performance to CSV
+    overall_csv_path = os.path.join('results', 'overall_performance.csv')
+    overall.to_csv(overall_csv_path, index=False)
+    print(f"Saved overall performance metrics to {overall_csv_path}")
+
+    # Plot settings - all metrics from aggregation
+    metrics = ['EAO', 'Robustness', 'Precision', 'TrackingTime', 'FPS', 'NumFrames', 'NumFailures']
+    titles = ['Expected Average Overlap (EAO)', 'Robustness (Failures/Frame)', 'Precision (Center Error)', 
+              'Average Tracking Time', 'Average FPS', 'Total Frames', 'Total Failures']
+    ylabels = ['EAO', 'Failures/Frame', 'Pixels', 'Seconds', 'FPS', 'Frames', 'Failures']
+    
+    # Create subplots in a single figure - 3 rows, 3 columns (with one empty subplot)
+    fig, axes = plt.subplots(3, 3, figsize=(18, 12))
+    axes = axes.flatten()  # Flatten to easily iterate
+    
+    for i, (metric, title, ylabel) in enumerate(zip(metrics, titles, ylabels)):
+        # Plot bar chart for each metric
+        axes[i].bar(overall['Tracker'], overall[metric])
+        axes[i].set_title(title)
+        axes[i].set_ylabel(ylabel)
+        axes[i].tick_params(axis='x', rotation=45)
+    
+    # Hide the last two empty subplots
+    for j in range(len(metrics), len(axes)):
+        axes[j].set_visible(False)
+    
+    plt.tight_layout()
+    plt.savefig(os.path.join('results', 'overall_performance.png'))
+    plt.show()
+    print(f"Saved overall performance plot to {os.path.join('results', 'overall_performance.png')}")
+    return overall
