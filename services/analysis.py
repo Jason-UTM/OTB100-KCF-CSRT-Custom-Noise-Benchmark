@@ -238,6 +238,18 @@ def overall_performance():
         axes[i].set_title(title)
         axes[i].set_ylabel(ylabel)
         axes[i].tick_params(axis='x', rotation=45)
+        
+        # Save individual metric plot
+        fig_individual = plt.figure(figsize=(8, 6))
+        plt.bar(overall['Tracker'], overall[metric])
+        plt.title(title)
+        plt.ylabel(ylabel)
+        plt.tick_params(axis='x', rotation=45)
+        plt.tight_layout()
+        individual_path = os.path.join('results', f'overall_{metric.lower()}_by_tracker.png')
+        plt.savefig(individual_path)
+        plt.close(fig_individual)
+        print(f"Saved individual {metric} plot to {individual_path}")
     
     # Hide the last two empty subplots
     for j in range(len(metrics), len(axes)):
@@ -263,6 +275,20 @@ def overall_performance():
         axes[i].set_ylabel(ylabel)
         axes[i].legend(title='Tracker')
         axes[i].tick_params(axis='x', rotation=45)
+        
+        # Save individual metric plot for tracker and combo
+        fig_individual = plt.figure(figsize=(12, 8))
+        pivot.plot(kind='bar', width=0.6)
+        plt.title(f'{title} by Tracker and Combo')
+        plt.xlabel('Noise/Occlusion')
+        plt.ylabel(ylabel)
+        plt.legend(title='Tracker')
+        plt.tick_params(axis='x', rotation=45)
+        plt.tight_layout()
+        individual_path = os.path.join('results', f'overall_{metric.lower()}_by_tracker_and_combo.png')
+        plt.savefig(individual_path)
+        plt.close(fig_individual)
+        print(f"Saved individual {metric} by combo plot to {individual_path}")
     
     # Hide the last two empty subplots
     for j in range(len(metrics), len(axes)):
