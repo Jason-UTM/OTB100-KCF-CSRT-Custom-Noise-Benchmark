@@ -199,10 +199,27 @@ def overall_performance():
     print("Overall performance metrics:")
     print(overall)
 
+    overall_by_tracker_and_combo = df.groupby(['Tracker', 'Combo']).agg({
+        'EAO': 'mean',
+        'Robustness': 'mean',
+        'Precision': 'mean',
+        'TrackingTime': 'mean',
+        'FPS': 'mean',
+        'NumFrames': 'sum',
+        'NumFailures': 'sum'
+    }).reset_index()
+    print("Overall performance metrics by tracker and combo:")
+    print(overall_by_tracker_and_combo)
+
     # Save overall performance to CSV
     overall_csv_path = os.path.join('results', 'overall_performance.csv')
     overall.to_csv(overall_csv_path, index=False)
     print(f"Saved overall performance metrics to {overall_csv_path}")
+
+    # Save overall performance by tracker and combo to CSV
+    overall_by_combo_csv_path = os.path.join('results', 'overall_performance_by_combo.csv')
+    overall_by_tracker_and_combo.to_csv(overall_by_combo_csv_path, index=False)
+    print(f"Saved overall performance by combo metrics to {overall_by_combo_csv_path}")
 
     # Plot settings - all metrics from aggregation
     metrics = ['EAO', 'Robustness', 'Precision', 'TrackingTime', 'FPS', 'NumFrames', 'NumFailures']
@@ -210,6 +227,7 @@ def overall_performance():
               'Average Tracking Time', 'Average FPS', 'Total Frames', 'Total Failures']
     ylabels = ['EAO', 'Failures/Frame', 'Pixels', 'Seconds', 'FPS', 'Frames', 'Failures']
     
+    # ===== PLOT 1: Overall Performance by Tracker =====
     # Create subplots in a single figure - 3 rows, 3 columns (with one empty subplot)
     fig, axes = plt.subplots(3, 3, figsize=(18, 12))
     axes = axes.flatten()  # Flatten to easily iterate
@@ -229,4 +247,85 @@ def overall_performance():
     plt.savefig(os.path.join('results', 'overall_performance.png'))
     plt.show()
     print(f"Saved overall performance plot to {os.path.join('results', 'overall_performance.png')}")
+
+    # ===== PLOT 2: Overall Performance by Tracker and Combo =====
+    fig, axes = plt.subplots(3, 3, figsize=(20, 12))
+    axes = axes.flatten()  # Flatten to easily iterate
+    
+    for i, (metric, title, ylabel) in enumerate(zip(metrics, titles, ylabels)):
+        # Pivot data for grouped bar plot
+        pivot = overall_by_tracker_and_combo.pivot(index='Combo', columns='Tracker', values=metric)
+        
+        # Plot
+        pivot.plot(kind='bar', ax=axes[i], width=0.6)
+        axes[i].set_title(f'{title} by Tracker and Combo')
+        axes[i].set_xlabel('Noise/Occlusion')
+        axes[i].set_ylabel(ylabel)
+        axes[i].legend(title='Tracker')
+        axes[i].tick_params(axis='x', rotation=45)
+    
+    # Hide the last two empty subplots
+    for j in range(len(metrics), len(axes)):
+        axes[j].set_visible(False)
+    
+    plt.tight_layout()
+    plt.savefig(os.path.join('results', 'overall_performance_by_combo.png'))
+    plt.show()
+    print(f"Saved overall performance by combo plot to {os.path.join('results', 'overall_performance_by_combo.png')}")
+
+    # ===== PLOT 3: EAO Trends for Overall Performance =====
+    # Parse combo column to extract noise and occlusion for overall_by_tracker_and_combo
+    overall_by_tracker_and_combo['Noise'] = overall_by_tracker_and_combo['Combo'].str.rsplit('_', n=1).str[0]
+    overall_by_tracker_and_combo['Occlusion'] = overall_by_tracker_and_combo['Combo'].str.rsplit('_', n=1).str[1].astype(float)
+    
+    plt.figure(figsize=(12, 8))
+    for tracker in overall_by_tracker_and_combo['Tracker'].unique():
+        for noise in overall_by_tracker_and_combo['Noise'].unique():
+            subset = overall_by_tracker_and_combo[(overall_by_tracker_and_combo['Tracker'] == tracker) & 
+                                                (overall_by_tracker_and_combo['Noise'] == noise)]
+            subset = subset.sort_values('Occlusion')
+            plt.plot(subset['Occlusion'], subset['EAO'], marker='o', linewidth=2, markersize=8, 
+                    label=f'{tracker} ({noise})')
+    
+    plt.title('Overall EAO vs. Occlusion Level (All Sequences)')
+    plt.xlabel('Occlusion Level')
+    plt.ylabel('EAO')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.savefig(os.path.join('results', 'overall_eao_trends.png'))
+    plt.show()
+    print(f"Saved overall EAO trends plot to {os.path.join('results', 'overall_eao_trends.png')}")
+
+    # ===== PLOT 4: Precision vs Robustness for Overall Performance =====
+    # Plot 4a: Overall by tracker only
+    plt.figure(figsize=(10, 6))
+    for tracker in overall['Tracker'].unique():
+        subset = overall[overall['Tracker'] == tracker]
+        plt.scatter(subset['Robustness'], subset['Precision'], s=200, label=tracker, alpha=0.7)
+    
+    plt.title('Overall Precision vs. Robustness (All Sequences)')
+    plt.xlabel('Robustness (Failures/Frame)')
+    plt.ylabel('Precision (Center Error, Pixels)')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.savefig(os.path.join('results', 'overall_precision_vs_robustness.png'))
+    plt.show()
+    print(f"Saved overall precision vs robustness plot to {os.path.join('results', 'overall_precision_vs_robustness.png')}")
+
+    # Plot 4b: Overall by tracker and combo
+    plt.figure(figsize=(12, 8))
+    for tracker in overall_by_tracker_and_combo['Tracker'].unique():
+        subset = overall_by_tracker_and_combo[overall_by_tracker_and_combo['Tracker'] == tracker]
+        plt.scatter(subset['Robustness'], subset['Precision'], 
+                   s=subset['Occlusion']*300, label=tracker, alpha=0.6)
+    
+    plt.title('Overall Precision vs. Robustness by Combo (All Sequences)')
+    plt.xlabel('Robustness (Failures/Frame)')
+    plt.ylabel('Precision (Center Error, Pixels)')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.savefig(os.path.join('results', 'overall_precision_vs_robustness_by_combo.png'))
+    plt.show()
+    print(f"Saved overall precision vs robustness by combo plot to {os.path.join('results', 'overall_precision_vs_robustness_by_combo.png')}")
+
     return overall
